@@ -71,6 +71,7 @@ function __m_save_mark --description "Save the current directory as a mark"
   set -l bn $argv[1]
   if [ (count $argv) -lt 1 ]
     set bn (basename (pwd))
+    set bn (echo $bn | sed 's/[^[:alnum:]_]\+//g')
   end
 
   if not echo $bn | grep -q "^[a-zA-Z0-9_]*\$";
