@@ -1,5 +1,10 @@
 #!/bin/sh
 set -U MARKS_FILE $HOME/.marks
+if test -f which(gsed)
+  set -U SED (which gsed)
+else
+  set -U SED (which sed)
+end
 
 function m
   if test -n $argv[1];
@@ -49,7 +54,7 @@ function __m_use_mark --description "Go to (cd) to the directory associated with
   end
 
   if not __m_print_usage $argv[1];
-    cat $MARKS_FILE | sed -r "s/^(\w+) /set -x DIR_\1 /" | .
+    cat $MARKS_FILE | $SED -r "s/^(\w+) /set -x DIR_\1 /" | .
     set -l target (env | grep "^DIR_$argv[1]=" | cut -f2 -d "=")
 
     if [ ! -n "$target" ]
@@ -71,7 +76,7 @@ function __m_save_mark --description "Save the current directory as a mark"
   set -l bn $argv[1]
   if [ (count $argv) -lt 1 ]
     set bn (basename (pwd))
-    set bn (echo $bn | sed 's/[^[:alnum:]_]\+//g')
+    set bn (echo $bn | $SED 's/[^[:alnum:]_]\+//g')
   end
 
   if not echo $bn | grep -q "^[a-zA-Z0-9_]*\$";
@@ -80,10 +85,10 @@ function __m_save_mark --description "Save the current directory as a mark"
   end
 
   if __m_valid_mark $bn;
-    sed -i='' "/$bn /d" $MARKS_FILE
+    $SED -i='' "/$bn /d" $MARKS_FILE
   end
 
-  set -l pwd (pwd | sed "s#^$HOME#\$HOME#g")
+  set -l pwd (pwd | $SED "s#^$HOME#\$HOME#g")
   echo "$bn \"$pwd\"" >> $MARKS_FILE
 
   __m_update_completions
@@ -96,7 +101,7 @@ function __m_print_mark --description "Print the directory associated with a mar
     return 1
   end
   if not __m_print_usage $argv[1];
-    cat $MARKS_FILE | sed -r "s/^(\w+) /set -x DIR_\1 /" | .
+    cat $MARKS_FILE | $SED -r "s/^(\w+) /set -x DIR_\1 /" | .
     env | grep "^DIR_$argv[1]=" | cut -f2 -d "="
   else
     echo 'FUCK'
@@ -112,14 +117,14 @@ function __m_delete_mark --description "Delete a bookmark"
     echo -e "\033[0;31mERROR: bookmark '$argv[1]' does not exist\033[00m"
     return 1
   else
-    sed -i='' "/$argv[1] /d" $MARKS_FILE
+    $SED -i='' "/$argv[1] /d" $MARKS_FILE
     __m_update_completions
   end
 end
 
 function __m_list_marks --description "List all available marks"
   if not __m_print_usage $argv[1];
-    cat $MARKS_FILE | sed -r "s/^(\w+) /set -x DIR_\1 /" | .
+    cat $MARKS_FILE | $SED -r "s/^(\w+) /set -x DIR_\1 /" | .
     env | sort | awk '/DIR_.+/{split(substr($0,5),parts,"="); printf("\033[0;33m%-20s\033[0m %s\n", parts[1], parts[2]);}'
   end
 end
@@ -152,7 +157,7 @@ function __m_valid_mark
   if begin; [ (count $argv) -lt 1 ]; or not [ -n $argv[1] ]; end
     return 1
   else
-    cat $MARKS_FILE | sed -r "s/^(\w+) /set -x DIR_\1 /" | .
+    cat $MARKS_FILE | $SED -r "s/^(\w+) /set -x DIR_\1 /" | .
     set -l mark (env | grep "^DIR_$argv[1]=" | cut -f1 -d "=" | cut -f2 -d "_")
     if begin; not [ -n "$mark" ]; or not [ $mark=$argv[1] ]; end
       return 1
@@ -163,9 +168,9 @@ function __m_valid_mark
 end
 
 function __m_update_completions
-    env | grep "^DIR_" | cut -f1 -d "=" | sed "s/^/ set -e /" | .
-    cat $MARKS_FILE | sed -r "s/^(\w+) /set -x DIR_\1 /" | .
-    set -x _marks (env | grep "^DIR_" | sed "s/^DIR_//" | cut -f1 -d "=" | tr '\n' ' ')
+    env | grep "^DIR_" | cut -f1 -d "=" | $SED "s/^/ set -e /" | .
+    cat $MARKS_FILE | $SED -r "s/^(\w+) /set -x DIR_\1 /" | .
+    set -x _marks (env | grep "^DIR_" | $SED "s/^DIR_//" | cut -f1 -d "=" | tr '\n' ' ')
     complete -c __m_print_mark -a $_marks -f
     complete -c __m_delete_mark -a $_marks -f
     complete -c __m_use_mark -a $_marks -f
