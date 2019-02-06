@@ -1,6 +1,6 @@
 #!/bin/sh
 set -U MARKS_FILE $HOME/.marks
-if test -f which(gsed)
+if test -w /usr/local/bin/gsed
   set -U SED (which gsed)
 else
   set -U SED (which sed)
