@@ -1,13 +1,18 @@
 #!/bin/sh
 set -U MARKS_FILE $HOME/.marks
-if test -w /usr/local/bin/gsed
-  set -U SED (which gsed)
+
+if ! test -w $MARKS_FILE
+  touch $MARKS_FILE
+end
+
+if test -w (which gsed)
+  set -gx SED (which gsed)
 else
-  set -U SED (which sed)
+  set -gx SED (which sed)
 end
 
 function m
-  if test -n $argv[1];
+  if count $argv > /dev/null
     switch $argv[1]
       case "-h" "--help"
         __m_print_usage -h
