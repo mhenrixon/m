@@ -196,7 +196,7 @@ end
 
 function __m_update_completions
   env | grep "^DIR_" | cut -f1 -d "=" | $SED "s/^/ set -e /" | .
-  cat $MARKS_FILE | $SED -r "s/^(\w+) /set -x DIR_\1 /" | echo
+  cat $MARKS_FILE | $SED -r "s/^(\w+) /set -x DIR_\1 /" | .
   set -x _marks (env | grep "^DIR_" | $SED "s/^DIR_//" | cut -f1 -d "=" | tr '\n' ' ')
   complete -c __m_print_mark -a $_marks -f
   complete -c __m_delete_mark -a $_marks -f
@@ -208,4 +208,5 @@ function __m_update_completions
     complete -c g -a $_marks -f
   end
 end
+
 __m_update_completions
