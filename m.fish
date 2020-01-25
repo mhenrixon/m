@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env fish
+
 set -U MARKS_FILE $HOME/.marks
 
 if ! test -w $MARKS_FILE
@@ -12,7 +13,7 @@ else
 end
 
 function m
-  if count $argv > /dev/null
+  if count $argv >/dev/null
     switch $argv[1]
       case "-h" "--help"
         __m_print_usage -h
@@ -23,7 +24,7 @@ function m
       case "-p" "--print"
         __m_print_mark $argv[2]
       case "-s" "--save"
-        __m_save_mark  $argv[2]
+        __m_save_mark $argv[2]
       case "-d" "--delete"
         __m_delete_mark $argv[2]
       case '*'
@@ -37,14 +38,19 @@ end
 function __m_edit_mark --description "edit marks file"
   set -l path $MARKS_FILE
 
-  if begin; test (count $argv) -gt 1; and test -d $argv[2]; end
+  if begin
+      test (count $argv) -gt 1
+      and test -d $argv[2]
+    end
     set -l mark $argv[2]
     set -l path (__m_mark_destination $mark)
   end
 
-  if test -f $path;
+  if test -f $path
+
     eval $EDITOR $path
-  else if test -d $path;
+  else if test -d $path
+
     eval $EDITOR $path
   else
     echo "No mark named: $mark"
@@ -58,7 +64,8 @@ function __m_use_mark --description "Go to (cd) to the directory associated with
     return 1
   end
 
-  if not __m_print_usage $argv[1];
+  if not __m_print_usage $argv[1]
+
     cat $MARKS_FILE | $SED -r "s/^(\w+) /set -x DIR_\1 /" | .
     set -l target (env | grep "^DIR_$argv[1]=" | cut -f2 -d "=")
 
@@ -84,17 +91,19 @@ function __m_save_mark --description "Save the current directory as a mark"
     set bn (echo $bn | $SED 's/[^[:alnum:]_]\+//g')
   end
 
-  if not echo $bn | grep -q "^[a-zA-Z0-9_]*\$";
+  if not echo $bn | grep -q "^[a-zA-Z0-9_]*\$"
+
     echo -e "\033[0;31mERROR: Mark names may only contain alphanumeric characters and underscores.\033[00m"
     return 1
   end
 
-  if __m_valid_mark $bn;
+  if __m_valid_mark $bn
+
     $SED -i='' "/$bn /d" $MARKS_FILE
   end
 
   set -l pwd (pwd | $SED "s#^$HOME#\$HOME#g")
-  echo "$bn \"$pwd\"" >> $MARKS_FILE
+  echo "$bn \"$pwd\"" >>$MARKS_FILE
 
   __m_update_completions
   return 0
@@ -105,7 +114,8 @@ function __m_print_mark --description "Print the directory associated with a mar
     echo -e "\033[0;31mERROR: mark name required\033[00m"
     return 1
   end
-  if not __m_print_usage $argv[1];
+  if not __m_print_usage $argv[1]
+
     cat $MARKS_FILE | $SED -r "s/^(\w+) /set -x DIR_\1 /" | .
     env | grep "^DIR_$argv[1]=" | cut -f2 -d "="
   else
@@ -118,7 +128,8 @@ function __m_delete_mark --description "Delete a bookmark"
     echo -e "\033[0;31mERROR: bookmark name required\033[00m"
     return 1
   end
-  if not __m_valid_mark $argv[1];
+  if not __m_valid_mark $argv[1]
+
     echo -e "\033[0;31mERROR: bookmark '$argv[1]' does not exist\033[00m"
     return 1
   else
@@ -128,7 +139,8 @@ function __m_delete_mark --description "Delete a bookmark"
 end
 
 function __m_list_marks --description "List all available marks"
-  if not __m_print_usage $argv[1];
+  if not __m_print_usage $argv[1]
+
     cat $MARKS_FILE | $SED -r "s/^(\w+) /set -x DIR_\1 /" | .
     env | sort | awk '/DIR_.+/{split(substr($0,5),parts,"="); printf("\033[0;33m%-20s\033[0m %s\n", parts[1], parts[2]);}'
   end
@@ -139,7 +151,11 @@ function __m_print_usage
     return 1
   end
 
-  if begin; [ "-h" = $argv[1] ]; or [ "-help" = $argv[1] ]; or [ "--help" = $argv[1] ]; end
+  if begin
+      [ "-h" = $argv[1] ]
+      or [ "-help" = $argv[1] ]
+      or [ "--help" = $argv[1] ]
+    end
     cat '
 Usage:
   m [OPTION] [BOOKMARK]
@@ -159,12 +175,18 @@ General Options:
 end
 
 function __m_valid_mark
-  if begin; [ (count $argv) -lt 1 ]; or not [ -n $argv[1] ]; end
+  if begin
+      [ (count $argv) -lt 1 ]
+      or not [ -n $argv[1] ]
+    end
     return 1
   else
     cat $MARKS_FILE | $SED -r "s/^(\w+) /set -x DIR_\1 /" | .
     set -l mark (env | grep "^DIR_$argv[1]=" | cut -f1 -d "=" | cut -f2 -d "_")
-    if begin; not [ -n "$mark" ]; or not [ $mark=$argv[1] ]; end
+    if begin
+        not [ -n "$mark" ]
+        or not [ $mark=$argv[1] ]
+      end
       return 1
     else
       return 0
@@ -173,17 +195,17 @@ function __m_valid_mark
 end
 
 function __m_update_completions
-    env | grep "^DIR_" | cut -f1 -d "=" | $SED "s/^/ set -e /" | .
-    cat $MARKS_FILE | $SED -r "s/^(\w+) /set -x DIR_\1 /" | .
-    set -x _marks (env | grep "^DIR_" | $SED "s/^DIR_//" | cut -f1 -d "=" | tr '\n' ' ')
-    complete -c __m_print_mark -a $_marks -f
-    complete -c __m_delete_mark -a $_marks -f
-    complete -c __m_use_mark -a $_marks -f
-    complete -c m -a $_marks -f
-    if not set -q NO_FISHMARKS_COMPAT_ALIASES
-        complete -c p -a $_marks -f
-        complete -c d -a $_marks -f
-        complete -c g -a $_marks -f
-    end
+  env | grep "^DIR_" | cut -f1 -d "=" | $SED "s/^/ set -e /" | .
+  cat $MARKS_FILE | $SED -r "s/^(\w+) /set -x DIR_\1 /" | echo
+  set -x _marks (env | grep "^DIR_" | $SED "s/^DIR_//" | cut -f1 -d "=" | tr '\n' ' ')
+  complete -c __m_print_mark -a $_marks -f
+  complete -c __m_delete_mark -a $_marks -f
+  complete -c __m_use_mark -a $_marks -f
+  complete -c m -a $_marks -f
+  if not set -q NO_FISHMARKS_COMPAT_ALIASES
+    complete -c p -a $_marks -f
+    complete -c d -a $_marks -f
+    complete -c g -a $_marks -f
+  end
 end
 __m_update_completions
