@@ -1,58 +1,80 @@
-# m
-m is a lightweight tool for working with bookmarks in the terminal.
+<img src="https://cdn.rawgit.com/oh-my-fish/oh-my-fish/e4f1c2e0219a17e2c748b824004c8d0b38055c16/docs/logo.svg" align="left" width="144px" height="144px"/>
+
+#### m - Bookmark Manager
+> A plugin for [Oh My Fish][omf-link].
+
+[![Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg?style=flat-square)](LICENSE)
+[![Fish Shell Version](https://img.shields.io/badge/fish-v3.0.0-007EC7.svg?style=flat-square)](https://fishshell.com)
+[![Oh My Fish Framework](https://img.shields.io/badge/Oh%20My%20Fish-Framework-007EC7.svg?style=flat-square)](https://www.github.com/oh-my-fish/oh-my-fish)
+
+<br/>
+
+A powerful bookmark manager for the fish shell with sophisticated fuzzy matching. Easily save, organize, and navigate to your most frequently used directories.
+
+## Features
+
+- 📂 Save and manage directory bookmarks
+- 🔍 Advanced fuzzy matching for quick navigation
+- 🏠 Smart handling of $HOME paths for portability
+- 🎯 Sophisticated scoring system for finding the best match
+- 🚀 Fast and dependency-free implementation
+
+## Install
+
+```fish
+$ omf install m
+```
 
 ## Usage
-m uses `$HOME/.marks` to store bookmarks. Bookmarks can be managed by editing
-the marks file in your favorite editor. m even provide a shortcut for doing
-this: `m -e`.
 
-### Structure
-The structure of `$HOME/.marks` is very similar to the structure of the hosts
-file, `/etc/hosts`. Bookmarks are defined in the format: `<key> <path>`.
+```fish
+# Show help information
+$ m -h
 
-**Example**
+# Save current directory as a bookmark
+$ m -s project_name
 
-    hosts   /etc/hosts
-    awesome /code/work/projects/awesome
+# Jump to a saved bookmark
+$ m project_name
 
-### Command-line interface
+# Jump with fuzzy matching (e.g., 'proj' will match 'project_name')
+$ m proj
 
-    $ m
-    Usage:
-      m [OPTION] [MARK]
+# List all bookmarks
+$ m -l
 
-    General Options:
-      -h, --help          - Usage
-      -l, --list          - List marks
-      -e, --edit          - Edit marks with \$EDITOR
-      -s, --save   <mark> - Saves the current directory as "mark"
-      -p, --print  <mark> - Prints the directory associated with "mark"
-      -d, --delete <mark> - Deletes the mark
-      <mark>              - Goes (cd) to the directory associated with "mark"'
+# Search for bookmarks matching a pattern
+$ m -f pattern
 
-**Example**
+# Delete a bookmark
+$ m -d bookmark_name
 
-    ~ $ m -l
-    hosts   /etc/hosts
-    awesome /code/work/projects/awesome
-    ~ $ m awesome
-    /code/work/projects/awesome $
+# Print the path of a bookmark
+$ m -p bookmark_name
 
-## Installation
+# Edit bookmarks file directly
+$ m -e
+```
 
-### Homebrew
-m can be installed with [Homebrew](http://brew.sh/).
+## Fuzzy Matching
 
-    brew tap KevinSjoberg/formulas
-    brew install KevinSjoberg/m
+The fuzzy matching system uses a sophisticated scoring algorithm:
 
-### Manually
-Put [m](https://raw.github.com/KevinSjoberg/m/master/m) in a directory of your
-choice. I chose `$HOME/bin/m`. Source it via your `$HOME/.bashrc`.
+- Prefix matches are prioritized (e.g., "doc" matches "documents")
+- Substring matches are scored next (e.g., "ument" matches "documents")
+- Path matches are considered (matching text in the bookmark path)
+- Character-by-character partial matches as a fallback
 
-### Fish Shell
-Put [m.fish](https://raw.github.com/KevinSjoberg/m/master/m.fish) in a directory of your choice. I chose `$HOME/bin/m.fish`. Source it via your `$HOME/.config/fish/config.fish`.
+This allows you to quickly navigate to your bookmarks even if you can't remember the exact name.
 
-## Alternatives
+## License
 
-  * [bashmarks](https://github.com/huyng/bashmarks)
+[Unlicense][unlicense] © [Mikael Henriksson][author] et [al][contributors]
+
+
+[unlicense]:      https://unlicense.org
+[author]:         https://github.com/mhenrixon
+[contributors]:   https://github.com/mhenrixon/pkg-m/graphs/contributors
+[omf-link]:       https://www.github.com/oh-my-fish/oh-my-fish
+
+[license-badge]:  https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square
