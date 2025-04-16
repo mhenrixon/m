@@ -1,6 +1,6 @@
 # Print usage information
 function __m_print_usage
-  echo 'Usage:
+    echo 'Usage:
   m [OPTION] [BOOKMARK]
 
 General Options:

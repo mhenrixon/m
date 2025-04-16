@@ -10,7 +10,7 @@ set -g MARKS_FILE $HOME/.marks
 
 # Create bookmarks file if it doesn't exist
 if ! test -f $MARKS_FILE
-  touch $MARKS_FILE
+    touch $MARKS_FILE
 end
 
 # Initialize completions
